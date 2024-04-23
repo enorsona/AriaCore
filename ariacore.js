@@ -50,6 +50,8 @@ AriaCore = {
         const image = AriaCore.GIFE(input);
         if (!image) return 'Failed to read. Cannot find image';
         const target = grayed ? AriaCore.Grayer(image) : image;
-        return AriaCore.TryRead(target, language);
+        AriaCore.TryRead(target, language).then((data) => {
+            return data;
+        });
     }
 }
