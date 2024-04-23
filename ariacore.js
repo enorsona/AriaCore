@@ -68,9 +68,16 @@ AriaCore = {
             }
         },
         RegisterReceiver: (id, callback) => {
+            const receiver = document.querySelector(`#${id}`);
+            if (!receiver) {
+                setTimeout(() => {
+                    AriaCore.OCR.RegisterReceiver(id, callback)
+                }, 100);
+                return
+            }
             if (!AriaCore.OCR.Receivers[id]) {
                 AriaCore.OCR.Receivers[id] = {
-                    widget: document.querySelector(`#${id}`),
+                    widget: receiver,
                     callback: callback,
                 };
             }
@@ -84,7 +91,10 @@ AriaCore = {
                 subtree: true,
                 characterData: true,
             };
-            observer.observe(AriaCore.OCR.Receivers[id], observer_config);
+            observer.observe(AriaCore.OCR.Receivers[id].widget, observer_config);
         },
+        ReceiveResult: (receiver_id) => {
+            return AriaCore.OCR.Receivers[receiver_id].widget.innerText;
+        }
     }
 };
