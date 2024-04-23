@@ -43,5 +43,13 @@ AriaCore = {
         const raw = result.data.text;
         await worker.terminate();
         return raw;
+    },
+    SimpleRead: (id, language, grayed) => {
+        const input = AriaCore.FEBI(id);
+        if (!input) return 'Failed to read. Cannot find uploader';
+        const image = AriaCore.GIFE(input);
+        if (!image) return 'Failed to read. Cannot find image';
+        const target = grayed ? AriaCore.Grayer(image) : image;
+        return AriaCore.TryRead(target, language);
     }
 }
