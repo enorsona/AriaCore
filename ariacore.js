@@ -42,7 +42,7 @@ AriaCore = {
         if (!AriaCore.Workers[l]) {
             AriaCore.Workers[l] = await Tesseract.createWorker(l);
         }
-        return AriaCore.Workers[l](s).then(data => data.data.text);
+        return AriaCore.Workers[l].recognize(s).then(data => data.data.text);
     },
     SimpleRead: async (id, language, grayed) => {
         const input = AriaCore.FEBI(id);
