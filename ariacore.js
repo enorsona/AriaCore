@@ -1,4 +1,5 @@
 AriaCore = {
+    Workers: {},
     FEBI: (id) => {
         const e = document.querySelector(`#${id}`);
         if (e) return e;
@@ -38,13 +39,10 @@ AriaCore = {
         r.src = URL.createObjectURL(i);
     },
     TryRead: async (s, l) => {
-        const worker = await Tesseract.createWorker(l);
-        let result;
-        worker.recognize(s).then(data => {
-            result = data.data.text;
-        })
-        await worker.terminate();
-        return result;
+        if (!AriaCore.Workers[l]) {
+            AriaCore.Workers[l] = await Tesseract.createWorker(l);
+        }
+        return AriaCore.Workers[l](s).then(data => data.data.text);
     },
     SimpleRead: async (id, language, grayed) => {
         const input = AriaCore.FEBI(id);
@@ -53,5 +51,13 @@ AriaCore = {
         if (!image) return 'Failed to read. Cannot find image';
         const target = grayed ? AriaCore.Grayer(image) : image;
         return await AriaCore.TryRead(target, language);
+    },
+    DestroyWorker: async (l) => {
+        if (!AriaCore.Workers[l]) {
+            console.log('No work to do.')
+        } else {
+            await AriaCore.Workers[l].terminate();
+            console.log(`Terminating worker ${l}...`);
+        }
     }
 }
