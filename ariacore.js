@@ -39,9 +39,12 @@ AriaCore = {
     },
     TryRead: async (s, l) => {
         const worker = await Tesseract.createWorker(l);
+        let result;
         worker.recognize(s).then(data => {
-            return data.data.text;
+            result = data.data.text;
         })
+        await worker.terminate();
+        return result;
     },
     SimpleRead: async (id, language, grayed) => {
         const input = AriaCore.FEBI(id);
