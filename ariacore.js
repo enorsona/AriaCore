@@ -1,5 +1,8 @@
-AriaCore = {
+AriaCore = {};
+AriaCore.OCR = {
     Workers: {},
+    Receivers: {},
+    Callbacks: {},
     FEBI: (id) => {
         const e = document.querySelector(`#${id}`);
         if (e) return e;
@@ -39,25 +42,48 @@ AriaCore = {
         r.src = URL.createObjectURL(i);
     },
     TryRead: async (s, l) => {
-        if (!AriaCore.Workers[l]) {
-            AriaCore.Workers[l] = await Tesseract.createWorker(l);
+        if (!AriaCore.OCR.Workers[l]) {
+            AriaCore.OCR.Workers[l] = await Tesseract.createWorker(l);
         }
-        return AriaCore.Workers[l].recognize(s).then(data => data.data.text);
+        let result;
+        result = await AriaCore.OCR.Workers[l].recognize(s).then(data => data.data.text);
+        return result;
     },
-    SimpleRead: async (id, language, grayed) => {
-        const input = AriaCore.FEBI(id);
+    SimpleRead: async (id, receiver_id, language, grayed) => {
+        const input = AriaCore.OCR.FEBI(id);
         if (!input) return 'Failed to read. Cannot find uploader';
-        const image = AriaCore.GIFE(input);
+        const image = AriaCore.OCR.GIFE(input);
         if (!image) return 'Failed to read. Cannot find image';
-        const target = grayed ? AriaCore.Grayer(image) : image;
-        return await AriaCore.TryRead(target, language);
+        const target = grayed ? AriaCore.OCR.Grayer(image) : image;
+        let result;
+        result = await AriaCore.OCR.TryRead(target, language);
+        AriaCore.OCR.Receivers[receiver_id].widget.innerText = result;
     },
     DestroyWorker: async (l) => {
-        if (!AriaCore.Workers[l]) {
+        if (!AriaCore.OCR.Workers[l]) {
             console.log('No work to do.')
         } else {
-            await AriaCore.Workers[l].terminate();
+            await AriaCore.OCR.Workers[l].terminate();
             console.log(`Terminating worker ${l}...`);
         }
-    }
+    },
+    RegisterReceiver: (id, callback) => {
+        if (!AriaCore.OCR.Receivers[id]) {
+            AriaCore.OCR.Receivers[id] = {
+                widget: document.querySelector(`#${id}`),
+                callback: callback,
+            };
+        }
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                callback();
+            })
+        })
+        const observer_config = {
+            childList: true,
+            subtree: true,
+            characterData: true,
+        };
+        observer.observe(AriaCore.OCR.Receivers[id], observer_config);
+    },
 }
