@@ -39,19 +39,16 @@ AriaCore = {
     },
     TryRead: async (s, l) => {
         const worker = await Tesseract.createWorker(l);
-        const result = await worker.recognize(s);
-        const raw = result.data.text;
-        await worker.terminate();
-        return raw;
+        worker.recognize(s).then(data => {
+            return data.data.text;
+        })
     },
-    SimpleRead: (id, language, grayed) => {
+    SimpleRead: async (id, language, grayed) => {
         const input = AriaCore.FEBI(id);
         if (!input) return 'Failed to read. Cannot find uploader';
         const image = AriaCore.GIFE(input);
         if (!image) return 'Failed to read. Cannot find image';
         const target = grayed ? AriaCore.Grayer(image) : image;
-        AriaCore.TryRead(target, language).then((data) => {
-            return data;
-        });
+        return await AriaCore.TryRead(target, language);
     }
 }
